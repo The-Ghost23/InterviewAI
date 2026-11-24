@@ -15,6 +15,17 @@ class InvalidModelResponse(Exception):
 
 
 async def model_status() -> str:
+    if settings.ai_provider == 'runpod':
+        if not settings.runpod_base_url or not settings.runpod_api_key:
+            return 'unavailable'
+        try:
+            async with httpx.AsyncClient(timeout=10.0, follow_redirects=False) as client:
+                response = await client.get(settings.runpod_base_url.rstrip('/') + '/models', headers=runpod_headers())
+                response.raise_for_status()
+                models = response.json()['data']
+                return 'ready' if any(model['id'] == settings.runpod_model for model in models) else 'missing'
+        except (httpx.HTTPError, ValueError, KeyError, TypeError):
+            return 'unavailable'
     try:
         async with httpx.AsyncClient(timeout=3.0) as client:
             response = await client.get(f"{settings.ollama_base_url}/api/tags")
@@ -26,6 +37,8 @@ async def model_status() -> str:
 
 
 async def structured_chat(schema: dict, messages: list[dict], max_tokens: int = 256, seed: int | None = None) -> dict:
+    if settings.ai_provider == 'runpod':
+        return await runpod_chat(schema, messages, max_tokens, seed)
     options = {"num_ctx": 4096, "num_predict": max_tokens, "temperature": 0.3}
     if seed is not None:
         options["seed"] = seed
@@ -50,6 +63,43 @@ async def structured_chat(schema: dict, messages: list[dict], max_tokens: int = 
         return result
     except (ValueError, KeyError, TypeError, AttributeError) as exc:
         raise InvalidModelResponse("The model returned an incomplete response. Please try again.") from exc
+
+
+def runpod_headers() -> dict:
+    return {'Authorization': 'Bearer ' + settings.runpod_api_key.get_secret_value()}
+
+
+async def runpod_chat(schema: dict, messages: list[dict], max_tokens: int, seed: int | None) -> dict:
+    if not settings.runpod_base_url or not settings.runpod_api_key:
+        raise ModelUnavailable('Hosted AI is not configured. Check the backend Runpod settings.')
+    body = {
+        'model': settings.runpod_model, 'messages': messages, 'stream': False,
+        'max_tokens': max_tokens, 'temperature': 0.3,
+        'response_format': {'type': 'json_schema', 'json_schema': {
+            'name': 'interview_response', 'strict': True, 'schema': schema,
+        }},
+        'chat_template_kwargs': {'enable_thinking': False},
+    }
+    if seed is not None:
+        body['seed'] = seed
+    try:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(180.0, connect=10.0), follow_redirects=False) as client:
+            response = await client.post(settings.runpod_base_url.rstrip('/') + '/chat/completions',
+                                         headers=runpod_headers(), json=body)
+            response.raise_for_status()
+    except httpx.HTTPError:
+        # Do not include provider bodies or request headers in public errors.
+        raise ModelUnavailable('Hosted AI could not complete the request. The worker may be starting or busy; please retry shortly.') from None
+    try:
+        choice = response.json()['choices'][0]
+        if choice.get('finish_reason') != 'stop':
+            raise ValueError('Incomplete response')
+        result = json.loads(choice['message']['content'])
+        if not isinstance(result, dict):
+            raise ValueError('Expected a JSON object')
+        return result
+    except (ValueError, KeyError, IndexError, TypeError, AttributeError):
+        raise InvalidModelResponse('The model returned an incomplete response. Please try again.') from None
 
 
 QUESTION_SCHEMA = {

@@ -1,4 +1,4 @@
-# InterviewAI — Days 1–7
+# InterviewAI — Days 1–8
 
 A mock-interview application with local AI feedback and optional browser voice built with React, TypeScript, Vite, Tailwind CSS, FastAPI, and Ollama Qwen3 4B.
 
@@ -338,3 +338,94 @@ npm run build
 ```
 
 Backend tests cover missing/invalid tokens, unavailable auth, server-assigned owners, cross-user reads/writes, private legacy rows and live PostgreSQL isolation. Frontend tests cover private-content gating, Google redirect parameters, rejected password login, signup confirmation and recovery/sign-out state transitions. Mocked UI tests do not replace a real Google consent or confirmation-email round trip.
+
+## Day 8 — deployment preparation
+
+Deployment code is prepared for Vercel (frontend), Render native Python (FastAPI and CPU Whisper), Supabase (Auth/PostgreSQL), and Runpod Serverless vLLM (Qwen3 4B). Creating hosting resources, selecting paid plans and testing the actual production URLs are separate steps. Do not treat source preparation as a live deployment.
+
+### 1. Create the Runpod Qwen endpoint
+
+Use Runpod's official **vLLM worker** serverless template with the OpenAI-compatible API, not an unrelated generic queue template. Its model settings should include:
+
+```dotenv
+MODEL_NAME=Qwen/Qwen3-4B
+MAX_MODEL_LEN=4096
+```
+
+Use one GPU with enough VRAM for the model and context; a 24 GB GPU is a reasonable starting point to test. Start with zero minimum/active workers and a maximum of one worker to limit idle cost and concurrency. Review the selected GPU rate and worker idle timeout before creating the endpoint: loading, processing, and idle worker time can be billable, and scale-to-zero causes cold starts. This repository does not create or pay for a GPU automatically.
+
+Use a current worker version supporting Qwen3, `response_format` JSON schema, and `chat_template_kwargs.enable_thinking=false`. A Runpod vLLM deployment uses Hugging Face weights (`Qwen/Qwen3-4B`); it does not upload the Ollama GGUF already stored on your Mac. Both serve the same model family but different runtimes/precision can change feedback, so recheck quality after switching.
+
+Create a Runpod API key scoped to the endpoint where supported. In your backend host, set:
+
+```dotenv
+AI_PROVIDER=runpod
+RUNPOD_BASE_URL=https://api.runpod.ai/v2/YOUR_ENDPOINT_ID/openai/v1
+RUNPOD_API_KEY=YOUR_PRIVATE_KEY
+RUNPOD_MODEL=Qwen/Qwen3-4B
+```
+
+Keep this key in backend environment settings only. Do not add a `VITE_` prefix or paste it into chat. Requests use strict JSON schema and preserve application-side question/feedback validation. Truncated or malformed model output is rejected. Failed Runpod requests do not silently fall back to your Mac or another provider. Worker cold starts may require retrying; one inference request times out after 180 seconds and the browser request after 240 seconds.
+
+Official worker setup and API contract: https://github.com/runpod-workers/worker-vllm
+Qwen model card: https://huggingface.co/Qwen/Qwen3-4B
+
+### 2. Deploy the backend to Render (native Python)
+
+No local Docker installation or container is required. The repository-root `render.yaml` prepares a native Python Web Service with Root Directory `backend`, Python 3.12.16 and uv 0.13.7. It selects a **paid standard plan**; review the price and resources in Render before creating it. Automatic deployments are disabled, but creating a Blueprint initially deploys a billable service.
+
+The settings are:
+
+```text
+Language: Python 3
+Root Directory: backend
+Build Command: uv sync --locked --no-dev --python 3.12 && .venv/bin/python scripts/prepare_speech.py
+Pre-Deploy Command: .venv/bin/alembic upgrade head
+Start Command: .venv/bin/uvicorn app.main:app --host 0.0.0.0 --port $PORT
+Health Check Path: /api/health
+```
+
+Set `PYTHON_VERSION=3.12.16` and `UV_VERSION=0.13.7` as included in the Blueprint. Render supports uv projects natively when `uv.lock` is present. The explicit Python selection overrides the local development `.python-version`.
+
+The speech preparation script downloads Whisper base.en on the Render server during the build. It reuses a complete existing model and fails the build if a download is incomplete. The path matches FastAPI's default model path. Visitors download no speech model; Git contains no weights. CPU Whisper still needs enough host memory and CPU for transcription; monitor usage and latency on the chosen plan.
+
+Use `backend/.env.production.example` as a checklist for the Render environment settings. Supply the existing Supabase database URI, public auth configuration and backend-only Runpod key. Never publish a real env file. A production configuration refuses temporary-memory storage, missing auth, local Ollama, missing hosted inference settings and non-HTTPS frontend origins.
+
+Choose a Supabase endpoint reachable from Render; Session pooler is an alternative if the direct endpoint is unreachable. Use SSL. The pre-deploy command applies migrations before starting the new backend version. `/api/health` is liveness only; database, AI and speech readiness require separate checks. Start with one backend instance.
+
+Render native FastAPI guide: https://render.com/docs/deploy-fastapi
+Python/uv configuration: https://render.com/docs/python-version and https://render.com/docs/uv-version
+Blueprint reference: https://render.com/docs/blueprint-spec
+
+### 3. Deploy the frontend to Vercel
+
+Import the GitHub repository and set **Root Directory** to `frontend`. The Vite preset builds with `npm run build` and serves `dist`; `frontend/vercel.json` adds basic response headers without disabling microphone capture. The current app uses hash routes, so its auth callback returns to `/` and no SPA path rewrite is needed.
+
+Set these build-time environment values in Vercel:
+
+```dotenv
+VITE_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLIC_KEY
+VITE_API_BASE_URL=https://YOUR_BACKEND.onrender.com
+```
+
+Use the backend origin without `/api`; the client appends its API paths. Production requests go directly from the browser to the backend, including Authorization and audio uploads. They do not pass through a Vercel function or proxy. The public key is deliberately browser-visible; DATABASE_URL, RUNPOD_API_KEY and the Google client secret must never be frontend build variables.
+
+In the backend host, set `CORS_ORIGINS` to a JSON array of the exact Vercel production origin, with no trailing slash, for example `["https://YOUR_APP.vercel.app"]`. Include a custom domain explicitly if using one. Do not allow every Vercel preview domain. Redeploy the backend after changing origins. Redeploy Vercel after changing its `VITE_` values because Vite substitutes them at build time.
+
+### 4. Update production login URLs
+
+In Supabase Auth URL Configuration, set Site URL to the HTTPS production frontend URL and allow its exact root redirect URL with a trailing slash. Keep localhost redirect URLs for development. Add the production origin to the Google Web client's authorized JavaScript origins if using that configuration. Google's authorized redirect URI remains the same Supabase `/auth/v1/callback` URL. The app selects its current browser origin for OAuth and email redirects.
+
+### 5. Production smoke checks
+
+After the actual services exist:
+
+- `/api/health` returns 200, database storage status is persistent/ready, and AI status names `Qwen/Qwen3-4B` and reports ready.
+- Sign in through Google and through confirmed email/password, then sign out.
+- Start an interview, submit an answer and reopen the report after a backend restart.
+- A different account sees only its own history; unauthenticated interview requests return 401.
+- Speech status reports ready. Record a short answer, stop it, check the transcript and submit it; typed answers remain available.
+- Check first-request cold-start latency, host memory, Runpod usage and costs. Restrict signup/use or add shared per-user quotas/rate limiting before distributing a publicly accessible paid-inference demo widely.
+
+Publishing source to GitHub alone does not deploy these services. Local development remains `AI_PROVIDER=ollama` with a blank `VITE_API_BASE_URL`, the existing Vite proxy, and the usual startup commands. Production examples contain placeholders only.

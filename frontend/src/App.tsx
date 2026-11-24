@@ -122,8 +122,8 @@ function App() {
             <div aria-live="polite" className="mt-5">{busy && <p role="status" className="text-slate-300">Your interviewer is preparing. Loading the model for the first time may take a moment.</p>}{error && <p role="alert" className="rounded-xl bg-red-950/60 p-4 text-red-200">{error}</p>}</div>
           </section>
           <aside className="space-y-6"><section className="panel"><p className="eyebrow">Session preview</p><h2 className="mb-5 text-2xl font-semibold">A clear place to begin</h2><dl className="space-y-4"><div className="status-row"><dt>Your role</dt><dd>{preferences.role}</dd></div><div className="status-row"><dt>Your focus</dt><dd>{preferences.topic}</dd></div><div className="status-row"><dt>Your level</dt><dd>{preferences.difficulty}</dd></div><div className="status-row"><dt>Your plan</dt><dd>{preferences.question_count} questions</dd></div></dl></section>
-            <section className="panel" aria-live="polite"><p className="eyebrow">Connection</p><h2 className="mb-5 text-xl font-semibold">Ready when you are</h2><dl className="space-y-4"><div className="status-row"><dt>Interview service</dt><dd>{backend}</dd></div><div className="status-row"><dt>Local AI</dt><dd className="capitalize">{ai.status}</dd></div><div className="status-row"><dt>Interview storage</dt><dd>{storage.ready ? storage.persistent ? 'Supabase connected' : 'Temporary memory' : 'Unavailable'}</dd></div></dl>
-              {backend === 'Unavailable' ? <p className="mt-4 text-amber-200">The interview service is unavailable. Start the backend, then check again.</p> : ai.status === 'missing' ? <p className="mt-4 text-amber-200">The local model needs to be downloaded. See the README for setup.</p> : ai.status === 'unavailable' ? <p className="mt-4 text-amber-200">Ollama is unavailable. Start Ollama, then check again.</p> : null}
+            <section className="panel" aria-live="polite"><p className="eyebrow">Connection</p><h2 className="mb-5 text-xl font-semibold">Ready when you are</h2><dl className="space-y-4"><div className="status-row"><dt>Interview service</dt><dd>{backend}</dd></div><div className="status-row"><dt>AI service</dt><dd className="capitalize">{ai.status}</dd></div><div className="status-row"><dt>Interview storage</dt><dd>{storage.ready ? storage.persistent ? 'Supabase connected' : 'Temporary memory' : 'Unavailable'}</dd></div></dl>
+              {backend === 'Unavailable' ? <p className="mt-4 text-amber-200">The interview service is unavailable. Start the backend, then check again.</p> : ai.status === 'missing' ? <p className="mt-4 text-amber-200">The configured AI model is unavailable. Check the model setup, then try again.</p> : ai.status === 'unavailable' ? <p className="mt-4 text-amber-200">The AI service is unavailable. Check the service connection, then try again.</p> : null}
               {storage.backend === 'memory' && <p className="mt-4 text-sm leading-relaxed text-amber-200">Supabase is not connected yet. Interviews remain temporary until the backend database connection is configured.</p>}
               {!storage.ready && backend === 'Connected' && <p className="mt-4 text-sm text-amber-200">Interview storage is unavailable. Check the backend connection and migrations, then check again.</p>}
               <button type="button" onClick={() => void checkStatus()} disabled={checking || busy} className="secondary mt-6">{checking ? 'Checking…' : 'Check connection'}</button>
@@ -131,7 +131,7 @@ function App() {
           </aside>
         </div>
       </>}
-      <footer className="mt-10 border-t border-white/10 pt-6 text-sm text-slate-400">Local AI feedback · Optional browser voice</footer>
+      <footer className="mt-10 border-t border-white/10 pt-6 text-sm text-slate-400">AI feedback · Optional voice answers</footer>
     </main>
   )
 }

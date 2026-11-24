@@ -17,7 +17,7 @@ if settings.database_url:
 app = FastAPI(title="InterviewAI", version="0.1.0")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=settings.cors_origins,
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type", "Authorization"],
 )
@@ -31,14 +31,14 @@ async def health():
 
 @app.get("/api/ai/status")
 async def ai_status():
-    return {"status": await provider.model_status(), "model": settings.ollama_model}
+    return {"status": await provider.model_status(), "model": settings.active_model}
 
 
 @app.post("/api/interview/question", dependencies=[Depends(current_user)], response_model=QuestionResponse)
 async def question(request: QuestionRequest):
     try:
         content = await provider.generate_question(request.role, request.topic, request.difficulty)
-        return QuestionResponse(question=content, model=settings.ollama_model)
+        return QuestionResponse(question=content, model=settings.active_model)
     except provider.ModelUnavailable as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except provider.InvalidModelResponse as exc:
