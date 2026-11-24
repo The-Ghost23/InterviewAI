@@ -1,4 +1,4 @@
-# InterviewAI — Days 1–5
+# InterviewAI — Days 1–6
 
 A mock-interview application with local AI feedback and optional browser voice built with React, TypeScript, Vite, Tailwind CSS, FastAPI, and Ollama Qwen3 4B.
 
@@ -14,7 +14,7 @@ Project location: `/Users/dipyamanbhowmick/Desktop/Personal/Projects/InterviewAI
 - Refresh reopens the current question, submitted answers, feedback, or completed summary using the session ID in the URL; Back to setup retains your settings.
 - Independent backend health and model readiness indicators.
 - Create an interview and generate its first question through React → FastAPI → Ollama.
-- Sessions are local and temporary: held in backend memory for up to four hours, with the oldest removed once 100 sessions are retained. A backend restart, including automatic reload after a Python edit, clears them.
+- Supabase-backed interviews persist across restarts. Without DATABASE_URL, temporary memory mode retains up to 100 sessions for four hours and clears them on restart; the app labels this mode explicitly.
 - Clear loading states, validation, model failures, and retry controls.
 - Backend tests for input validation, CORS, unavailable models, and malformed/truncated model responses.
 
@@ -156,7 +156,7 @@ Feedback includes four integer ratings (0–10), strengths, missing concepts, su
 
 After feedback, send `{"question_number": 1}` to `POST /api/interviews/ID/next`. The backend refuses to skip unanswered questions. Repeating an identical answer submission or the same next-question request returns the saved result instead of advancing twice. Another in-flight session action returns 409. Failed model requests leave the saved state unchanged, allowing retries. If the browser times out after the server saved a result, refresh to retrieve it.
 
-Session states: `awaiting_answer` → `feedback` → `awaiting_answer`; the final answer goes directly to `completed`. The summary is computed from saved feedback, with the average of per-question scores, per-category averages, and up to five deduplicated practice suggestions. All question/answer/feedback records remain available in `history` until the temporary session expires or the backend restarts.
+Session states: `awaiting_answer` → `feedback` → `awaiting_answer`; the final answer goes directly to `completed`. The summary is computed from saved feedback, with the average of per-question scores, per-category averages, and up to five deduplicated practice suggestions. All question/answer/feedback records remain available in `history`. In Supabase mode they persist across restarts; only the optional temporary-memory mode expires or clears them.
 
 Day 3 verification (local file: `docs/day3-verification.md`; excluded from Git) records automated tests and real local-model browser checks. Startup commands are unchanged; no new dependencies are required.
 
@@ -214,8 +214,51 @@ Browser capture requires localhost or HTTPS and microphone permission. The brows
 
 From `frontend/`, run `npm test` and `npm run build`. From `backend/`, run `uv run --locked pytest -q`. See server transcription verification (local file: `docs/day5-server-transcription.md`; excluded from Git) for test results and the remaining real-microphone check.
 
-## Supabase preparation status
 
-PostgreSQL dependencies and a backend storage adapter have been scaffolded for the next milestone. Supabase is not connected and database migrations/history UI are not finalized or verified yet. Leave `DATABASE_URL` unset while publishing the current working local app to GitHub; it continues using temporary in-memory sessions. Do not treat this as completed persistent storage. We will finish the migration and connect the selected Supabase project after the repository is uploaded.
+## Day 6 — Supabase PostgreSQL and interview history
 
-The repository excludes local environment files, model weights, dependencies, build output, and audio/video recordings. Commit `.env.example` files as templates, not real credentials. Uploading source to GitHub does not deploy the running frontend/backend or local models.
+Backend storage uses a private PostgreSQL schema named `interviewai`. The browser never receives the database connection string. For this local single-owner milestone, the backend connects with the database owner role; user accounts and per-user ownership filtering are not implemented yet. History is shared within this local development workspace, so this is not a public multi-user deployment.
+
+### Connection and migration
+
+1. In Supabase, open **Connect**. A Direct connection is suitable for this persistent FastAPI server if its endpoint is reachable. Use Session pooler on port 5432 if the direct endpoint is not reachable from the network.
+2. Put the URI in `backend/.env` as `DATABASE_URL="..."`. Replace the password placeholder completely; do not keep its surrounding square brackets unless they are real password characters. Percent-encode reserved password characters such as `@`, `#`, `/`, and `?`. The `.env` file remains ignored by Git.
+3. From `backend/`, run:
+
+```bash
+uv sync --locked
+uv run --locked alembic upgrade head
+```
+
+This creates `interviewai.interviews` and `interviewai.interview_turns`, plus an Alembic version table. It enables row-level security and revokes public schema/table access. It does not change Supabase's Auth or Storage schemas or expose the app schema through the Data API. The owner connection can access its own tables; there are no browser/public read policies.
+
+4. Restart FastAPI after changing `.env`. Check `/api/storage/status`; a working configured connection reports `backend: supabase`, `persistent: true`, `ready: true`.
+
+A configured but failing database does not silently fall back to memory. With no DATABASE_URL, the existing temporary-memory mode remains available and is identified in the UI.
+
+### Saved interview behavior
+
+Use **History** in the header to see the newest interviews, ten per page. **Resume interview** reopens an unfinished question/feedback state. **View report** reopens a completed interview. Completed reports are calculated from the stored answer/feedback history. Supabase interviews do not expire after four hours and are not deleted when the backend restarts. Earlier in-memory interviews cannot be recovered after a restart.
+
+An interview row stores settings, the current question, status, timestamps, and a revision number. Evaluated turns are separate rows with question, answer, and validated feedback JSONB. Saving a transition and its new turn is one database transaction. Revision checks reject stale updates with 409 rather than overwriting newer progress. Local in-flight guards avoid duplicate work within one backend process; concurrent workers may still perform redundant model inference before the revision check rejects a stale save.
+
+History responses contain summaries and scores, not answer text. Full answers remain available when reopening a specific interview. All database access runs off the FastAPI event loop.
+
+### Tests
+
+```bash
+cd backend
+uv run --locked pytest -q
+# Explicit, reversible PostgreSQL test against the configured project:
+RUN_SUPABASE_TESTS=1 uv run --locked pytest -q tests/test_storage.py
+```
+
+The opt-in test creates one synthetic interview, saves its completed feedback, disposes/recreates the connection pool, verifies restored data and revision conflicts, checks RLS flags, then removes only its own test row. It does not delete existing interviews.
+
+To review migration SQL without connecting:
+
+```bash
+uv run --locked alembic upgrade head --sql
+```
+
+The migration files and application source belong in Git. Real `.env` files, local notes, screenshots, model weights, and recordings remain ignored.

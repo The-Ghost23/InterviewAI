@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from uuid import UUID, uuid4
 from pydantic import ValidationError
 from sqlalchemy import (MetaData, Table, Column, String, Integer, DateTime, Text, ForeignKey,
-                        CheckConstraint, Index, select, insert, update, func, create_engine)
+                        CheckConstraint, Index, select, insert, update, create_engine)
 from sqlalchemy.dialects.postgresql import UUID as PGUUID, JSONB
 from sqlalchemy.engine import make_url
 from sqlalchemy.exc import SQLAlchemyError
@@ -49,7 +49,10 @@ class RevisionConflict(Exception):
 
 
 def make_database_engine(connection_string: str):
-    url = make_url(connection_string)
+    try:
+        url = make_url(connection_string)
+    except Exception:
+        raise ValueError('DATABASE_URL is not a valid PostgreSQL connection string.') from None
     if url.drivername not in ('postgres', 'postgresql', 'postgresql+psycopg'):
         raise ValueError('DATABASE_URL must be a PostgreSQL connection string.')
     url = url.set(drivername='postgresql+psycopg')
@@ -95,8 +98,8 @@ class DatabaseStore:
 
     def check(self):
         with self.transaction() as connection:
-            connection.execute(select(interviews.c.id).limit(0))
-            connection.execute(select(turns.c.interview_id).limit(0))
+            connection.execute(select(interviews).limit(0))
+            connection.execute(select(turns).limit(0))
 
     def create(self, request: SessionRequest, question: str, model: str) -> InterviewSession:
         session = InterviewSession(**request.model_dump(), id=uuid4(), created_at=datetime.now(timezone.utc), question=question, model=model)
@@ -135,7 +138,23 @@ class DatabaseStore:
         return updated
 
     def list(self, limit: int, offset: int) -> list[InterviewSession]:
-        # Keep history responses bounded; each session has at most ten turns.
-        with self.transaction() as connection:
-            ids = connection.execute(select(interviews.c.id).order_by(interviews.c.created_at.desc(), interviews.c.id.desc()).limit(limit).offset(offset)).scalars().all()
-        return [session for session_id in ids if (session := self.get(session_id)) is not None]
+        try:
+            with self.transaction() as connection:
+                rows = connection.execute(select(interviews).order_by(
+                    interviews.c.created_at.desc(), interviews.c.id.desc()).limit(limit).offset(offset).with_for_update(read=True)).mappings().all()
+                if not rows:
+                    return []
+                ids = [row['id'] for row in rows]
+                history = connection.execute(select(turns).where(turns.c.interview_id.in_(ids)).order_by(turns.c.question_number)).mappings().all()
+                grouped = {session_id: [] for session_id in ids}
+                for turn in history:
+                    grouped[turn['interview_id']].append(dict(question_number=turn['question_number'],
+                        question=turn['question'], answer=turn['answer'], feedback=turn['feedback']))
+                result = []
+                for row in rows:
+                    data = dict(row); data.pop('updated_at')
+                    data['history'] = grouped[row['id']]
+                    result.append(InterviewSession.model_validate(data))
+                return result
+        except ValidationError as exc:
+            raise StorageUnavailable('Saved interview history could not be loaded. Check its stored data.') from exc

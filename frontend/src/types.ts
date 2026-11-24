@@ -9,3 +9,5 @@ export type Session = Preferences & {
   status: 'awaiting_answer' | 'feedback' | 'completed'; history: Turn[]
   summary: { answered: number; overall_score: number; category_scores: Record<string, number>; suggestions: string[] } | null
 }
+
+export type StorageStatus = { backend: string; persistent: boolean; ready: boolean }
