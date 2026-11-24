@@ -1,0 +1,42 @@
+{
+  "prompt_version": "day4-v2",
+  "rows": [
+    {
+      "id": "keys-strong",
+      "feedback": {
+        "technical_accuracy": 9,
+        "completeness": 10,
+        "clarity": 9,
+        "reasoning": 8,
+        "strengths": [
+          "Correctly identifies primary key as row identifier with uniqueness and non-NULL requirement"
+        ],
+        "missing_concepts": [],
+        "suggestions": [
+          "Clarify that primary keys are typically single-column in practice though multi-column is allowed"
+        ],
+        "score": 9.0
+      },
+      "matches_benchmark": true
+    },
+    {
+      "id": "keys-incorrect",
+      "feedback": {
+        "technical_accuracy": 0,
+        "completeness": 0,
+        "clarity": 3,
+        "reasoning": 0,
+        "strengths": [],
+        "missing_concepts": [
+          "Primary keys cannot have duplicate values and must not be NULL",
+          "Unique keys cannot have duplicate values but can be NULL"
+        ],
+        "suggestions": [
+          "Clarify that primary keys are unique and non-nullable, while unique keys allow NULLs but must be unique"
+        ],
+        "score": 0.8
+      },
+      "matches_benchmark": true
+    }
+  ]
+}

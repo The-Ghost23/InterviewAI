@@ -1,0 +1,267 @@
+{
+  "created_at": "2026-11-23T09:01:02.367072+00:00",
+  "variant": "baseline",
+  "split": "development",
+  "fingerprint": "6c4d2d2c9e216b342dd1d54d97c2ccd321715609e527bf2fc3c19ab0ffa2c98f",
+  "model": "qwen3:4b",
+  "options": {
+    "num_ctx": 4096,
+    "num_predict": 1000,
+    "temperature": 0.3,
+    "seed": 42
+  },
+  "rows": [
+    {
+      "id": "keys-strong",
+      "group": "keys",
+      "split": "development",
+      "level": "strong",
+      "expected_score": [
+        8,
+        10
+      ],
+      "repeat": 1,
+      "done_reason": "stop",
+      "tokens": 140,
+      "raw_content": "{\n  \"technical_accuracy\": 9,\n  \"completeness\": 9,\n  \"clarity\": 9,\n  \"reasoning\": 8,\n  \"strengths\": [\n    \"Clear distinction between primary key and unique key constraints\",\n    \"Correctly notes that primary key enforces non-NULL values while unique key allows NULLs (with caveats)\"\n  ],\n  \"missing_concepts\": [\n    \"Clarification that primary keys are typically used as the table's main identifier for efficient lookups\"\n  ],\n  \"suggestions\": [\n    \"Consider adding a brief note about how primary keys are usually the first choice for foreign key references\"\n  ]\n}",
+      "feedback": {
+        "technical_accuracy": 9,
+        "completeness": 9,
+        "clarity": 9,
+        "reasoning": 8,
+        "strengths": [
+          "Clear distinction between primary key and unique key constraints",
+          "Correctly notes that primary key enforces non-NULL values while unique key allows NULLs (with caveats)"
+        ],
+        "missing_concepts": [
+          "Clarification that primary keys are typically used as the table's main identifier for efficient lookups"
+        ],
+        "suggestions": [
+          "Consider adding a brief note about how primary keys are usually the first choice for foreign key references"
+        ],
+        "score": 8.8
+      },
+      "in_band": true,
+      "seconds": 3.933
+    },
+    {
+      "id": "keys-partial",
+      "group": "keys",
+      "split": "development",
+      "level": "partial",
+      "expected_score": [
+        3,
+        7.9
+      ],
+      "repeat": 1,
+      "done_reason": "stop",
+      "tokens": 96,
+      "raw_content": "{\n  \"technical_accuracy\": 8,\n  \"completeness\": 7,\n  \"clarity\": 9,\n  \"reasoning\": 8,\n  \"strengths\": [\n    \"Clear distinction between uniqueness and identification roles\"\n  ],\n  \"missing_concepts\": [\n    \"Primary keys must be non-nullable\"\n  ],\n  \"suggestions\": [\n    \"Specify that primary keys cannot be null (required by SQL standards)\"\n  ]\n}",
+      "feedback": {
+        "technical_accuracy": 8,
+        "completeness": 7,
+        "clarity": 9,
+        "reasoning": 8,
+        "strengths": [
+          "Clear distinction between uniqueness and identification roles"
+        ],
+        "missing_concepts": [
+          "Primary keys must be non-nullable"
+        ],
+        "suggestions": [
+          "Specify that primary keys cannot be null (required by SQL standards)"
+        ],
+        "score": 8.0
+      },
+      "in_band": false,
+      "seconds": 2.646
+    },
+    {
+      "id": "keys-incorrect",
+      "group": "keys",
+      "split": "development",
+      "level": "incorrect",
+      "expected_score": [
+        0,
+        3.5
+      ],
+      "repeat": 1,
+      "done_reason": "stop",
+      "tokens": 120,
+      "raw_content": "{\n  \"technical_accuracy\": 0,\n  \"completeness\": 0,\n  \"clarity\": 0,\n  \"reasoning\": 0,\n  \"strengths\": [],\n  \"missing_concepts\": [\n    \"Primary keys cannot allow duplicates\",\n    \"Primary keys cannot be NULL\",\n    \"Unique keys cannot allow duplicates but can be NULL (depending on DBMS)\"\n  ],\n  \"suggestions\": [\n    \"Primary keys must be unique and non-nullable\",\n    \"Unique keys can allow NULLs in some databases but must be unique\"\n  ]\n}",
+      "feedback": {
+        "technical_accuracy": 0,
+        "completeness": 0,
+        "clarity": 0,
+        "reasoning": 0,
+        "strengths": [],
+        "missing_concepts": [
+          "Primary keys cannot allow duplicates",
+          "Primary keys cannot be NULL",
+          "Unique keys cannot allow duplicates but can be NULL (depending on DBMS)"
+        ],
+        "suggestions": [
+          "Primary keys must be unique and non-nullable",
+          "Unique keys can allow NULLs in some databases but must be unique"
+        ],
+        "score": 0.0
+      },
+      "in_band": true,
+      "seconds": 3.394
+    },
+    {
+      "id": "indexes-strong",
+      "group": "indexes",
+      "split": "development",
+      "level": "strong",
+      "expected_score": [
+        8,
+        10
+      ],
+      "repeat": 1,
+      "done_reason": "stop",
+      "tokens": 141,
+      "raw_content": "{\n  \"technical_accuracy\": 9,\n  \"completeness\": 9,\n  \"clarity\": 9,\n  \"reasoning\": 8,\n  \"strengths\": [\n    \"Correctly identifies index as auxiliary structure for faster key lookup\",\n    \"Mentions B-tree as common index type (though other types exist)\"\n  ],\n  \"missing_concepts\": [\n    \"Does not explicitly mention how indexes reduce disk I/O (key factor in performance)\"\n  ],\n  \"suggestions\": [\n    \"Add a brief note on reduced disk I/O as the primary performance benefit\",\n    \"Clarify that index maintenance costs are trade-offs for faster queries\"\n  ]\n}",
+      "feedback": {
+        "technical_accuracy": 9,
+        "completeness": 9,
+        "clarity": 9,
+        "reasoning": 8,
+        "strengths": [
+          "Correctly identifies index as auxiliary structure for faster key lookup",
+          "Mentions B-tree as common index type (though other types exist)"
+        ],
+        "missing_concepts": [
+          "Does not explicitly mention how indexes reduce disk I/O (key factor in performance)"
+        ],
+        "suggestions": [
+          "Add a brief note on reduced disk I/O as the primary performance benefit",
+          "Clarify that index maintenance costs are trade-offs for faster queries"
+        ],
+        "score": 8.8
+      },
+      "in_band": true,
+      "seconds": 3.867
+    },
+    {
+      "id": "indexes-partial",
+      "group": "indexes",
+      "split": "development",
+      "level": "partial",
+      "expected_score": [
+        3,
+        7.9
+      ],
+      "repeat": 1,
+      "done_reason": "stop",
+      "tokens": 140,
+      "raw_content": "{\n  \"technical_accuracy\": 8,\n  \"completeness\": 7,\n  \"clarity\": 9,\n  \"reasoning\": 8,\n  \"strengths\": [\n    \"Clear and concise explanation of the core benefit of indexes\",\n    \"Correctly identifies the role of indexes in speeding up data location\"\n  ],\n  \"missing_concepts\": [\n    \"How indexes work under the hood (e.g., B-trees, hash indexes)\"\n  ],\n  \"suggestions\": [\n    \"Consider mentioning that indexes are typically implemented using B-trees for balanced tree structures\",\n    \"Note that indexes trade off storage space for faster query performance\"\n  ]\n}",
+      "feedback": {
+        "technical_accuracy": 8,
+        "completeness": 7,
+        "clarity": 9,
+        "reasoning": 8,
+        "strengths": [
+          "Clear and concise explanation of the core benefit of indexes",
+          "Correctly identifies the role of indexes in speeding up data location"
+        ],
+        "missing_concepts": [
+          "How indexes work under the hood (e.g., B-trees, hash indexes)"
+        ],
+        "suggestions": [
+          "Consider mentioning that indexes are typically implemented using B-trees for balanced tree structures",
+          "Note that indexes trade off storage space for faster query performance"
+        ],
+        "score": 8.0
+      },
+      "in_band": false,
+      "seconds": 3.867
+    },
+    {
+      "id": "indexes-incorrect",
+      "group": "indexes",
+      "split": "development",
+      "level": "incorrect",
+      "expected_score": [
+        0,
+        3.5
+      ],
+      "repeat": 1,
+      "done_reason": "stop",
+      "tokens": 137,
+      "raw_content": "{\n  \"technical_accuracy\": 0,\n  \"completeness\": 0,\n  \"clarity\": 0,\n  \"reasoning\": 0,\n  \"strengths\": [],\n  \"missing_concepts\": [\n    \"Indexes do not copy the entire database\",\n    \"Indexes do not make queries O(1) for all queries\",\n    \"Indexes require storage space\"\n    ],\n  \"suggestions\": [\n    \"Indexes are data structures that speed up data retrieval by allowing the database to find records more efficiently without scanning the entire table\",\n    \"Indexes do not copy the database; they store pointers or values to help locate data quickly\"\n  ]\n}",
+      "feedback": {
+        "technical_accuracy": 0,
+        "completeness": 0,
+        "clarity": 0,
+        "reasoning": 0,
+        "strengths": [],
+        "missing_concepts": [
+          "Indexes do not copy the entire database",
+          "Indexes do not make queries O(1) for all queries",
+          "Indexes require storage space"
+        ],
+        "suggestions": [
+          "Indexes are data structures that speed up data retrieval by allowing the database to find records more efficiently without scanning the entire table",
+          "Indexes do not copy the database; they store pointers or values to help locate data quickly"
+        ],
+        "score": 0.0
+      },
+      "in_band": true,
+      "seconds": 3.925
+    }
+  ],
+  "ollama_version": {
+    "version": "0.40.11"
+  },
+  "installed_models": {
+    "models": [
+      {
+        "name": "qwen3:4b",
+        "model": "qwen3:4b",
+        "modified_at": "2026-11-22T13:46:49.296260566+05:30",
+        "size": 2497293931,
+        "digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7",
+        "details": {
+          "parent_model": "",
+          "format": "gguf",
+          "family": "qwen3",
+          "families": [
+            "qwen3"
+          ],
+          "parameter_size": "4.0B",
+          "quantization_level": "Q4_K_M",
+          "context_length": 262144,
+          "embedding_length": 2560,
+          "runner": "ggml"
+        },
+        "capabilities": [
+          "completion",
+          "tools",
+          "thinking"
+        ]
+      }
+    ]
+  },
+  "metrics": {
+    "requests": 6,
+    "valid_responses": 6,
+    "in_band": 4,
+    "strong_answers_without_missing_claims": 0,
+    "strong_answers": 2,
+    "ordering": [
+      {
+        "group": "indexes",
+        "repeat": 1,
+        "correct_order": true
+      },
+      {
+        "group": "keys",
+        "repeat": 1,
+        "correct_order": true
+      }
+    ],
+    "mean_seconds": 3.61,
+    "max_seconds": 3.933
+  }
+}

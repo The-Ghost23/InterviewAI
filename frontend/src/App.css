@@ -1,0 +1,23 @@
+.panel { border: 1px solid #ffffff14; background: #171b29cc; border-radius: 1.25rem; padding: clamp(1.25rem, 3vw, 2rem); }
+.eyebrow { font-size: .875rem; color: #c4b5fd; font-weight: 600; margin-bottom: .75rem; }
+label { color: #cbd5e1; font-size: .9375rem; }
+input, select { display: block; width: 100%; margin-top: .5rem; padding: .8rem 1rem; border: 1px solid #ffffff26; border-radius: .65rem; background: #0d101b; color: #f1f5f9; }
+select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' stroke='%23cbd5e1' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; padding-right: 3rem; }
+.primary { border: 0; border-radius: .65rem; padding: .9rem 1.25rem; background: #a78bfa; color: #151025; font-weight: 700; }
+.primary:hover:not(:disabled) { background: #c4b5fd; }
+.status-row { display: flex; justify-content: space-between; flex-wrap: wrap; gap: .75rem; padding-bottom: .9rem; border-bottom: 1px solid #ffffff10; }
+.status-row dt { color: #94a3b8; }
+.status-row dd { color: #ddd6fe; }
+
+.secondary { border: 1px solid #ffffff30; border-radius: .65rem; padding: .65rem 1rem; color: #e2e8f0; background: transparent; }
+.secondary:hover:not(:disabled) { background: #ffffff0a; }
+.tag { border-radius: 999px; border: 1px solid #a78bfa40; color: #ddd6fe; padding: .3rem .8rem; font-size: .875rem; }
+.status-row dd { text-align: right; overflow-wrap: anywhere; max-width: 65%; }
+fieldset:disabled select { opacity: .65; cursor: wait; }
+
+textarea { display: block; width: 100%; resize: vertical; min-height: 10rem; padding: 1rem; border: 1px solid #ffffff26; border-radius: .65rem; background: #0d101b; color: #f1f5f9; font: inherit; line-height: 1.7; }
+textarea:disabled { opacity: .65; }
+.review-turn { margin-top: 1rem; padding: 1rem; border: 1px solid #ffffff20; border-radius: .75rem; }
+.review-turn summary { cursor: pointer; color: #ddd6fe; font-weight: 600; }
+
+.voice-panel { border: 1px solid #ffffff20; border-radius: .75rem; padding: 1rem; background: #ffffff03; }

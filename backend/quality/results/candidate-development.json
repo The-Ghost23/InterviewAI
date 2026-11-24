@@ -1,0 +1,254 @@
+{
+  "created_at": "2026-11-23T09:01:33.779156+00:00",
+  "variant": "candidate",
+  "split": "development",
+  "fingerprint": "4ebbef308a6885bfa80e14793d984f6f1ac6cdbfca6256ab7b7fccb31965ee59",
+  "model": "qwen3:4b",
+  "options": {
+    "num_ctx": 4096,
+    "num_predict": 1000,
+    "temperature": 0.3,
+    "seed": 42
+  },
+  "rows": [
+    {
+      "id": "keys-strong",
+      "group": "keys",
+      "split": "development",
+      "level": "strong",
+      "expected_score": [
+        8,
+        10
+      ],
+      "repeat": 1,
+      "done_reason": "stop",
+      "tokens": 101,
+      "raw_content": "{\n  \"technical_accuracy\": 9,\n  \"completeness\": 10,\n  \"clarity\": 9,\n  \"reasoning\": 8,\n  \"strengths\": [\n    \"Correctly identifies primary key as row identifier with uniqueness and non-NULL\"\n  ],\n  \"missing_concepts\": [],\n  \"suggestions\": [\n    \"Clarify that primary key is a single column constraint by default (not multiple columns) unless specified as composite\"\n  ]\n}",
+      "feedback": {
+        "technical_accuracy": 9,
+        "completeness": 10,
+        "clarity": 9,
+        "reasoning": 8,
+        "strengths": [
+          "Correctly identifies primary key as row identifier with uniqueness and non-NULL"
+        ],
+        "missing_concepts": [],
+        "suggestions": [
+          "Clarify that primary key is a single column constraint by default (not multiple columns) unless specified as composite"
+        ],
+        "score": 9.0
+      },
+      "in_band": true,
+      "seconds": 3.345
+    },
+    {
+      "id": "keys-partial",
+      "group": "keys",
+      "split": "development",
+      "level": "partial",
+      "expected_score": [
+        3,
+        7.9
+      ],
+      "repeat": 1,
+      "done_reason": "stop",
+      "tokens": 96,
+      "raw_content": "{\n  \"technical_accuracy\": 8,\n  \"completeness\": 8,\n  \"clarity\": 8,\n  \"reasoning\": 8,\n  \"strengths\": [\n    \"Clear distinction between primary and unique keys\"\n  ],\n  \"missing_concepts\": [\n    \"Primary keys also enforce referential integrity\"\n  ],\n  \"suggestions\": [\n    \"Consider adding that primary keys are required for foreign key relationships\"\n  ]\n  }",
+      "feedback": {
+        "technical_accuracy": 8,
+        "completeness": 8,
+        "clarity": 8,
+        "reasoning": 8,
+        "strengths": [
+          "Clear distinction between primary and unique keys"
+        ],
+        "missing_concepts": [
+          "Primary keys also enforce referential integrity"
+        ],
+        "suggestions": [
+          "Consider adding that primary keys are required for foreign key relationships"
+        ],
+        "score": 8.0
+      },
+      "in_band": false,
+      "seconds": 2.726
+    },
+    {
+      "id": "keys-incorrect",
+      "group": "keys",
+      "split": "development",
+      "level": "incorrect",
+      "expected_score": [
+        0,
+        3.5
+      ],
+      "repeat": 1,
+      "done_reason": "stop",
+      "tokens": 124,
+      "raw_content": "{\n  \"technical_accuracy\": 0,\n  \"completeness\": 0,\n  \"clarity\": 0,\n  \"reasoning\": 0,\n  \"strengths\": [],\n  \"missing_concepts\": [\n    \"A primary key must be unique and cannot be NULL\",\n    \"A primary key is a single column that uniquely identifies a row\",\n    \"A unique key can be multiple columns and can have NULL values (depending on the DBMS)\"\n  ],\n  \"suggestions\": [\n    \"Correct the statement about primary keys allowing duplicates and being NULL\"\n  ]\n  }",
+      "feedback": {
+        "technical_accuracy": 0,
+        "completeness": 0,
+        "clarity": 0,
+        "reasoning": 0,
+        "strengths": [],
+        "missing_concepts": [
+          "A primary key must be unique and cannot be NULL",
+          "A primary key is a single column that uniquely identifies a row",
+          "A unique key can be multiple columns and can have NULL values (depending on the DBMS)"
+        ],
+        "suggestions": [
+          "Correct the statement about primary keys allowing duplicates and being NULL"
+        ],
+        "score": 0.0
+      },
+      "in_band": true,
+      "seconds": 3.475
+    },
+    {
+      "id": "indexes-strong",
+      "group": "indexes",
+      "split": "development",
+      "level": "strong",
+      "expected_score": [
+        8,
+        10
+      ],
+      "repeat": 1,
+      "done_reason": "stop",
+      "tokens": 103,
+      "raw_content": "{\n  \"technical_accuracy\": 9,\n  \"completeness\": 10,\n  \"clarity\": 9,\n  \"reasoning\": 8,\n  \"strengths\": [\n    \"Correctly identifies index as auxiliary structure and B-tree example\"\n  ],\n  \"missing_concepts\": [],\n  \"suggestions\": [\n    \"Consider adding a brief note on why indexes are not always beneficial (e.g., when the table is small or selectivity is low)\"\n  ]\n}",
+      "feedback": {
+        "technical_accuracy": 9,
+        "completeness": 10,
+        "clarity": 9,
+        "reasoning": 8,
+        "strengths": [
+          "Correctly identifies index as auxiliary structure and B-tree example"
+        ],
+        "missing_concepts": [],
+        "suggestions": [
+          "Consider adding a brief note on why indexes are not always beneficial (e.g., when the table is small or selectivity is low)"
+        ],
+        "score": 9.0
+      },
+      "in_band": true,
+      "seconds": 2.937
+    },
+    {
+      "id": "indexes-partial",
+      "group": "indexes",
+      "split": "development",
+      "level": "partial",
+      "expected_score": [
+        3,
+        7.9
+      ],
+      "repeat": 1,
+      "done_reason": "stop",
+      "tokens": 89,
+      "raw_content": "{\n  \"technical_accuracy\": 8,\n  \"completeness\": 10,\n  \"clarity\": 10,\n  \"reasoning\": 8,\n  \"strengths\": [\n    \"Clear explanation of index purpose without technical jargon\"\n  ],\n  \"missing_concepts\": [],\n  \"suggestions\": [\n    \"Consider mentioning how indexes work with B-trees for efficient range queries\"\n  ]\n}",
+      "feedback": {
+        "technical_accuracy": 8,
+        "completeness": 10,
+        "clarity": 10,
+        "reasoning": 8,
+        "strengths": [
+          "Clear explanation of index purpose without technical jargon"
+        ],
+        "missing_concepts": [],
+        "suggestions": [
+          "Consider mentioning how indexes work with B-trees for efficient range queries"
+        ],
+        "score": 9.0
+      },
+      "in_band": false,
+      "seconds": 2.486
+    },
+    {
+      "id": "indexes-incorrect",
+      "group": "indexes",
+      "split": "development",
+      "level": "incorrect",
+      "expected_score": [
+        0,
+        3.5
+      ],
+      "repeat": 1,
+      "done_reason": "stop",
+      "tokens": 116,
+      "raw_content": "{\n  \"technical_accuracy\": 0,\n  \"completeness\": 0,\n  \"clarity\": 0,\n  \"reasoning\": 0,\n  \"strengths\": [],\n  \"missing_concepts\": [\n    \"Indexing does not copy the entire database to the browser\",\n    \"Indexes do not make queries O(1) universally\",\n    \"Indexes require storage and can affect write performance\"\n  ],\n  \"suggestions\": [\n    \"Clarify that indexes are stored on the database server, not the browser\"\n  ]\n  }",
+      "feedback": {
+        "technical_accuracy": 0,
+        "completeness": 0,
+        "clarity": 0,
+        "reasoning": 0,
+        "strengths": [],
+        "missing_concepts": [
+          "Indexing does not copy the entire database to the browser",
+          "Indexes do not make queries O(1) universally",
+          "Indexes require storage and can affect write performance"
+        ],
+        "suggestions": [
+          "Clarify that indexes are stored on the database server, not the browser"
+        ],
+        "score": 0.0
+      },
+      "in_band": true,
+      "seconds": 3.211
+    }
+  ],
+  "ollama_version": {
+    "version": "0.40.11"
+  },
+  "installed_models": {
+    "models": [
+      {
+        "name": "qwen3:4b",
+        "model": "qwen3:4b",
+        "modified_at": "2026-11-22T13:46:49.296260566+05:30",
+        "size": 2497293931,
+        "digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7",
+        "details": {
+          "parent_model": "",
+          "format": "gguf",
+          "family": "qwen3",
+          "families": [
+            "qwen3"
+          ],
+          "parameter_size": "4.0B",
+          "quantization_level": "Q4_K_M",
+          "context_length": 262144,
+          "embedding_length": 2560,
+          "runner": "ggml"
+        },
+        "capabilities": [
+          "completion",
+          "tools",
+          "thinking"
+        ]
+      }
+    ]
+  },
+  "metrics": {
+    "requests": 6,
+    "valid_responses": 6,
+    "in_band": 4,
+    "strong_answers_without_missing_claims": 2,
+    "strong_answers": 2,
+    "ordering": [
+      {
+        "group": "indexes",
+        "repeat": 1,
+        "correct_order": false
+      },
+      {
+        "group": "keys",
+        "repeat": 1,
+        "correct_order": true
+      }
+    ],
+    "mean_seconds": 3.03,
+    "max_seconds": 3.475
+  }
+}

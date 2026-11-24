@@ -1,0 +1,251 @@
+{
+  "created_at": "2026-11-23T09:03:39.305747+00:00",
+  "variant": "candidate",
+  "split": "holdout",
+  "fingerprint": "c201cd4d5203809b65d37241fe285eb4b7b7d45721ad6dd80b97562890cb1674",
+  "model": "qwen3:4b",
+  "options": {
+    "num_ctx": 4096,
+    "num_predict": 1000,
+    "temperature": 0.3,
+    "seed": 42
+  },
+  "rows": [
+    {
+      "id": "queues-strong",
+      "group": "queues",
+      "split": "holdout",
+      "level": "strong",
+      "expected_score": [
+        8,
+        10
+      ],
+      "repeat": 1,
+      "done_reason": "stop",
+      "tokens": 87,
+      "raw_content": "{\n  \"technical_accuracy\": 10,\n  \"completeness\": 10,\n  \"clarity\": 10,\n  \"reasoning\": 10,\n  \"strengths\": [],\n  \"missing_concepts\": [],\n  \"suggestions\": [\n    \"Consider adding a brief example of how the stack works in undo history (e.g., pressing 'undo' repeatedly)\"\n  ]\n  }",
+      "feedback": {
+        "technical_accuracy": 10,
+        "completeness": 10,
+        "clarity": 10,
+        "reasoning": 10,
+        "strengths": [],
+        "missing_concepts": [],
+        "suggestions": [
+          "Consider adding a brief example of how the stack works in undo history (e.g., pressing 'undo' repeatedly)"
+        ],
+        "score": 10.0
+      },
+      "in_band": true,
+      "seconds": 2.28
+    },
+    {
+      "id": "queues-partial",
+      "group": "queues",
+      "split": "holdout",
+      "level": "partial",
+      "expected_score": [
+        3,
+        7.9
+      ],
+      "repeat": 1,
+      "done_reason": "stop",
+      "tokens": 101,
+      "raw_content": "{\n  \"technical_accuracy\": 5,\n  \"completeness\": 0,\n  \"clarity\": 10,\n  \"reasoning\": 0,\n  \"strengths\": [],\n  \"missing_concepts\": [\n    \"explanation of LIFO/FIFO\",\n    \"one use case for stack\",\n    \"one use case for queue\"\n  ],\n  \"suggestions\": [\n    \"Explain what LIFO and FIFO mean in simple terms\"\n  ]\n  }",
+      "feedback": {
+        "technical_accuracy": 5,
+        "completeness": 0,
+        "clarity": 10,
+        "reasoning": 0,
+        "strengths": [],
+        "missing_concepts": [
+          "explanation of LIFO/FIFO",
+          "one use case for stack",
+          "one use case for queue"
+        ],
+        "suggestions": [
+          "Explain what LIFO and FIFO mean in simple terms"
+        ],
+        "score": 3.8
+      },
+      "in_band": true,
+      "seconds": 2.733
+    },
+    {
+      "id": "queues-incorrect",
+      "group": "queues",
+      "split": "holdout",
+      "level": "incorrect",
+      "expected_score": [
+        0,
+        3.5
+      ],
+      "repeat": 1,
+      "done_reason": "stop",
+      "tokens": 111,
+      "raw_content": "{\n  \"technical_accuracy\": 2,\n  \"completeness\": 3,\n  \"clarity\": 4,\n  \"reasoning\": 1,\n  \"strengths\": [],\n  \"missing_concepts\": [\n    \"Stacks remove the most recent item first (LIFO), queues remove the oldest item first (FIFO)\"\n  ],\n  \"suggestions\": [\n    \"Correct the order of operations: stacks use LIFO (last-in-first-out), queues use FIFO (first-in-first-out)\"\n  ]\n  }",
+      "feedback": {
+        "technical_accuracy": 2,
+        "completeness": 3,
+        "clarity": 4,
+        "reasoning": 1,
+        "strengths": [],
+        "missing_concepts": [
+          "Stacks remove the most recent item first (LIFO), queues remove the oldest item first (FIFO)"
+        ],
+        "suggestions": [
+          "Correct the order of operations: stacks use LIFO (last-in-first-out), queues use FIFO (first-in-first-out)"
+        ],
+        "score": 2.5
+      },
+      "in_band": true,
+      "seconds": 2.915
+    },
+    {
+      "id": "transactions-strong",
+      "group": "transactions",
+      "split": "holdout",
+      "level": "strong",
+      "expected_score": [
+        8,
+        10
+      ],
+      "repeat": 1,
+      "done_reason": "stop",
+      "tokens": 84,
+      "raw_content": "{\n  \"technical_accuracy\": 9,\n  \"completeness\": 10,\n  \"clarity\": 9,\n  \"reasoning\": 8,\n  \"strengths\": [\n    \"Clear explanation of transaction properties with concrete example\"\n  ],\n  \"missing_concepts\": [],\n  \"suggestions\": [\n    \"Consider adding a brief mention of ACID properties explicitly\"\n  ]\n}",
+      "feedback": {
+        "technical_accuracy": 9,
+        "completeness": 10,
+        "clarity": 9,
+        "reasoning": 8,
+        "strengths": [
+          "Clear explanation of transaction properties with concrete example"
+        ],
+        "missing_concepts": [],
+        "suggestions": [
+          "Consider adding a brief mention of ACID properties explicitly"
+        ],
+        "score": 9.0
+      },
+      "in_band": true,
+      "seconds": 2.351
+    },
+    {
+      "id": "transactions-partial",
+      "group": "transactions",
+      "split": "holdout",
+      "level": "partial",
+      "expected_score": [
+        3,
+        7.9
+      ],
+      "repeat": 1,
+      "done_reason": "stop",
+      "tokens": 110,
+      "raw_content": "{\n  \"technical_accuracy\": 5,\n  \"completeness\": 3,\n  \"clarity\": 8,\n  \"reasoning\": 2,\n  \"strengths\": [],\n  \"missing_concepts\": [\n    \"how transactions ensure data consistency through ACID properties\",\n    \"what happens if a transaction fails (rollback)\"\n  ],\n  \"suggestions\": [\n    \"Explain how atomicity (all or nothing) prevents partial updates, and include an example of rollback when a transaction fails.\"\n  ]\n  }",
+      "feedback": {
+        "technical_accuracy": 5,
+        "completeness": 3,
+        "clarity": 8,
+        "reasoning": 2,
+        "strengths": [],
+        "missing_concepts": [
+          "how transactions ensure data consistency through ACID properties",
+          "what happens if a transaction fails (rollback)"
+        ],
+        "suggestions": [
+          "Explain how atomicity (all or nothing) prevents partial updates, and include an example of rollback when a transaction fails."
+        ],
+        "score": 4.5
+      },
+      "in_band": true,
+      "seconds": 3.049
+    },
+    {
+      "id": "transactions-incorrect",
+      "group": "transactions",
+      "split": "holdout",
+      "level": "incorrect",
+      "expected_score": [
+        0,
+        3.5
+      ],
+      "repeat": 1,
+      "done_reason": "stop",
+      "tokens": 115,
+      "raw_content": "{\n  \"technical_accuracy\": 2,\n  \"completeness\": 3,\n  \"clarity\": 4,\n  \"reasoning\": 1,\n  \"strengths\": [],\n  \"missing_concepts\": [\n    \"Atomicity\",\n    \"Isolation\",\n    \"Durability\"\n  ],\n  \"suggestions\": [\n    \"Transactions ensure data consistency through ACID properties: Atomicity (all or nothing), Isolation (concurrent execution), Durability (permanent save), and Consistency (valid state).\"\n  ]\n  }",
+      "feedback": {
+        "technical_accuracy": 2,
+        "completeness": 3,
+        "clarity": 4,
+        "reasoning": 1,
+        "strengths": [],
+        "missing_concepts": [
+          "Atomicity",
+          "Isolation",
+          "Durability"
+        ],
+        "suggestions": [
+          "Transactions ensure data consistency through ACID properties: Atomicity (all or nothing), Isolation (concurrent execution), Durability (permanent save), and Consistency (valid state)."
+        ],
+        "score": 2.5
+      },
+      "in_band": true,
+      "seconds": 3.027
+    }
+  ],
+  "ollama_version": {
+    "version": "0.40.11"
+  },
+  "installed_models": {
+    "models": [
+      {
+        "name": "qwen3:4b",
+        "model": "qwen3:4b",
+        "modified_at": "2026-11-22T13:46:49.296260566+05:30",
+        "size": 2497293931,
+        "digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7",
+        "details": {
+          "parent_model": "",
+          "format": "gguf",
+          "family": "qwen3",
+          "families": [
+            "qwen3"
+          ],
+          "parameter_size": "4.0B",
+          "quantization_level": "Q4_K_M",
+          "context_length": 262144,
+          "embedding_length": 2560,
+          "runner": "ggml"
+        },
+        "capabilities": [
+          "completion",
+          "tools",
+          "thinking"
+        ]
+      }
+    ]
+  },
+  "metrics": {
+    "requests": 6,
+    "valid_responses": 6,
+    "in_band": 6,
+    "strong_answers_without_missing_claims": 2,
+    "strong_answers": 2,
+    "ordering": [
+      {
+        "group": "queues",
+        "repeat": 1,
+        "correct_order": true
+      },
+      {
+        "group": "transactions",
+        "repeat": 1,
+        "correct_order": true
+      }
+    ],
+    "mean_seconds": 2.73,
+    "max_seconds": 3.049
+  }
+}

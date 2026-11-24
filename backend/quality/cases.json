@@ -1,0 +1,182 @@
+[
+  {
+    "id": "keys-strong",
+    "group": "keys",
+    "split": "development",
+    "level": "strong",
+    "role": "Software Engineer",
+    "topic": "DBMS",
+    "difficulty": "Beginner",
+    "question": "What is the difference between a primary key and a unique key in a database?",
+    "answer": "A primary key is the chosen row identifier and enforces uniqueness and non-NULL values. A table has one primary key constraint, possibly on multiple columns, but can have several UNIQUE constraints. UNIQUE also prevents duplicate non-null values; treatment of NULLs depends on the DBMS. For example, users.id can be the primary key and users.email can be UNIQUE. Neither requires auto-increment.",
+    "expected_score": [
+      8,
+      10
+    ]
+  },
+  {
+    "id": "keys-partial",
+    "group": "keys",
+    "split": "development",
+    "level": "partial",
+    "role": "Software Engineer",
+    "topic": "DBMS",
+    "difficulty": "Beginner",
+    "question": "What is the difference between a primary key and a unique key in a database?",
+    "answer": "A primary key identifies rows uniquely. A unique key also prevents duplicates.",
+    "expected_score": [
+      3,
+      7.9
+    ]
+  },
+  {
+    "id": "keys-incorrect",
+    "group": "keys",
+    "split": "development",
+    "level": "incorrect",
+    "role": "Software Engineer",
+    "topic": "DBMS",
+    "difficulty": "Beginner",
+    "question": "What is the difference between a primary key and a unique key in a database?",
+    "answer": "A primary key allows duplicate rows and must always be NULL. A unique key is just a password for logging into the database.",
+    "expected_score": [
+      0,
+      3.5
+    ]
+  },
+  {
+    "id": "indexes-strong",
+    "group": "indexes",
+    "split": "development",
+    "level": "strong",
+    "role": "Software Engineer",
+    "topic": "DBMS",
+    "difficulty": "Beginner",
+    "question": "How does a database index improve query performance?",
+    "answer": "An index is an auxiliary structure, often a B-tree, that lets the optimizer locate matching keys and rows without scanning the whole table. For example, an index on users.email can speed up a selective email lookup. Indexes cost storage and must be maintained during INSERT, UPDATE and DELETE. The optimizer may choose a scan for a small table or low-selectivity condition, so an index does not always make a query faster.",
+    "expected_score": [
+      8,
+      10
+    ]
+  },
+  {
+    "id": "indexes-partial",
+    "group": "indexes",
+    "split": "development",
+    "level": "partial",
+    "role": "Software Engineer",
+    "topic": "DBMS",
+    "difficulty": "Beginner",
+    "question": "How does a database index improve query performance?",
+    "answer": "An index makes finding data faster because it helps locate rows.",
+    "expected_score": [
+      3,
+      7.9
+    ]
+  },
+  {
+    "id": "indexes-incorrect",
+    "group": "indexes",
+    "split": "development",
+    "level": "incorrect",
+    "role": "Software Engineer",
+    "topic": "DBMS",
+    "difficulty": "Beginner",
+    "question": "How does a database index improve query performance?",
+    "answer": "An index copies the entire database to the browser and makes every query O(1). It uses no storage and never affects writes.",
+    "expected_score": [
+      0,
+      3.5
+    ]
+  },
+  {
+    "id": "queues-strong",
+    "group": "queues",
+    "split": "holdout",
+    "level": "strong",
+    "role": "Software Engineer",
+    "topic": "Data Structures",
+    "difficulty": "Beginner",
+    "question": "Explain the difference between a stack and a queue and give one use case for each.",
+    "answer": "A stack is last-in, first-out: push adds to the top and pop removes the most recently added item. A queue is first-in, first-out: enqueue adds at the rear and dequeue removes the oldest item from the front. An undo history can use a stack, while a first-come-first-served job-processing pipeline can use a queue.",
+    "expected_score": [
+      8,
+      10
+    ]
+  },
+  {
+    "id": "queues-partial",
+    "group": "queues",
+    "split": "holdout",
+    "level": "partial",
+    "role": "Software Engineer",
+    "topic": "Data Structures",
+    "difficulty": "Beginner",
+    "question": "Explain the difference between a stack and a queue and give one use case for each.",
+    "answer": "A stack uses LIFO while a queue uses FIFO.",
+    "expected_score": [
+      3,
+      7.9
+    ]
+  },
+  {
+    "id": "queues-incorrect",
+    "group": "queues",
+    "split": "holdout",
+    "level": "incorrect",
+    "role": "Software Engineer",
+    "topic": "Data Structures",
+    "difficulty": "Beginner",
+    "question": "Explain the difference between a stack and a queue and give one use case for each.",
+    "answer": "A stack removes the oldest item first, while a queue always removes the newest item. Both must sort their items before removing them.",
+    "expected_score": [
+      0,
+      3.5
+    ]
+  },
+  {
+    "id": "transactions-strong",
+    "group": "transactions",
+    "split": "holdout",
+    "level": "strong",
+    "role": "Software Engineer",
+    "topic": "DBMS",
+    "difficulty": "Beginner",
+    "question": "What is the purpose of a database transaction and how does it ensure data consistency?",
+    "answer": "A transaction groups operations into a logical unit. Atomicity commits all operations or rolls them back together. Consistency preserves declared constraints and application invariants. Isolation controls concurrent interference, and durability preserves committed results after failures. In a bank transfer, the debit and credit must succeed together. BEGIN starts the unit, COMMIT persists it, and ROLLBACK cancels uncommitted changes. Correct application logic and constraints are still needed.",
+    "expected_score": [
+      8,
+      10
+    ]
+  },
+  {
+    "id": "transactions-partial",
+    "group": "transactions",
+    "split": "holdout",
+    "level": "partial",
+    "role": "Software Engineer",
+    "topic": "DBMS",
+    "difficulty": "Beginner",
+    "question": "What is the purpose of a database transaction and how does it ensure data consistency?",
+    "answer": "A transaction groups database operations, and COMMIT saves the changes.",
+    "expected_score": [
+      3,
+      7.9
+    ]
+  },
+  {
+    "id": "transactions-incorrect",
+    "group": "transactions",
+    "split": "holdout",
+    "level": "incorrect",
+    "role": "Software Engineer",
+    "topic": "DBMS",
+    "difficulty": "Beginner",
+    "question": "What is the purpose of a database transaction and how does it ensure data consistency?",
+    "answer": "A transaction permanently saves each statement immediately, cannot roll back, and disables database constraints so concurrent users cannot interfere.",
+    "expected_score": [
+      0,
+      3.5
+    ]
+  }
+]

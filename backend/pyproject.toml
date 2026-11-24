@@ -1,0 +1,21 @@
+[project]
+name = "interviewai-backend"
+version = "0.1.0"
+description = "Local InterviewAI API"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "httpx",
+    "pydantic-settings",
+    "faster-whisper>=1.2.1",
+    "sqlalchemy>=2.1.9",
+    "psycopg[binary]>=3.3.9",
+    "alembic>=1.20.1",
+]
+
+[dependency-groups]
+dev = ["pytest"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
