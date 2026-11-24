@@ -1,8 +1,9 @@
 from uuid import UUID
-from fastapi import FastAPI, HTTPException, Request, Query
+from fastapi import FastAPI, HTTPException, Request, Query, Depends
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.concurrency import run_in_threadpool
+from .auth import current_user
 from . import transcription
 from . import provider
 from .config import settings
@@ -18,7 +19,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
     allow_methods=["GET", "POST"],
-    allow_headers=["Content-Type"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 
@@ -33,7 +34,7 @@ async def ai_status():
     return {"status": await provider.model_status(), "model": settings.ollama_model}
 
 
-@app.post("/api/interview/question", response_model=QuestionResponse)
+@app.post("/api/interview/question", dependencies=[Depends(current_user)], response_model=QuestionResponse)
 async def question(request: QuestionRequest):
     try:
         content = await provider.generate_question(request.role, request.topic, request.difficulty)
@@ -45,16 +46,16 @@ async def question(request: QuestionRequest):
 
 
 @app.post("/api/interviews", response_model=InterviewSession, status_code=201)
-async def create_interview(request: SessionRequest):
+async def create_interview(request: SessionRequest, user: UUID = Depends(current_user)):
     # Only commit a session once generation succeeds. Failures can be retried.
     await run_in_threadpool(store.check)
     generated = await question(request)
-    return await run_in_threadpool(store.create, request, generated.question, generated.model)
+    return await run_in_threadpool(store.create, request, generated.question, generated.model, user)
 
 
 @app.get("/api/interviews/{session_id}", response_model=InterviewSession)
-async def get_interview(session_id: UUID):
-    session = await run_in_threadpool(store.get, session_id)
+async def get_interview(session_id: UUID, user: UUID = Depends(current_user)):
+    session = await run_in_threadpool(store.get, session_id, user)
     if session is None:
         raise HTTPException(status_code=404, detail="This interview was not found or has expired. Please start a new interview.")
     return session
@@ -74,8 +75,8 @@ async def busy_handler(request: Request, exc: SessionBusy):
     return JSONResponse(status_code=409, content={"detail": "This interview is processing another request. Please wait and retry."})
 
 
-async def require_session(session_id: UUID) -> InterviewSession:
-    session = await run_in_threadpool(store.get, session_id)
+async def require_session(session_id: UUID, user: UUID) -> InterviewSession:
+    session = await run_in_threadpool(store.get, session_id, user)
     if session is None:
         raise HTTPException(status_code=404, detail="This interview was not found or has expired. Please start a new interview.")
     return session
@@ -89,9 +90,9 @@ async def save_session(session: InterviewSession):
 
 
 @app.post("/api/interviews/{session_id}/answers", response_model=InterviewSession)
-async def submit_answer(session_id: UUID, request: AnswerRequest):
+async def submit_answer(session_id: UUID, request: AnswerRequest, user: UUID = Depends(current_user)):
     with store.operation(session_id):
-        session = await require_session(session_id)
+        session = await require_session(session_id, user)
         previous = next((turn for turn in session.history if turn.question_number == request.question_number), None)
         if previous:
             if previous.answer == request.answer:
@@ -109,9 +110,9 @@ async def submit_answer(session_id: UUID, request: AnswerRequest):
 
 
 @app.post("/api/interviews/{session_id}/next", response_model=InterviewSession)
-async def next_question(session_id: UUID, request: NextRequest):
+async def next_question(session_id: UUID, request: NextRequest, user: UUID = Depends(current_user)):
     with store.operation(session_id):
-        session = await require_session(session_id)
+        session = await require_session(session_id, user)
         if request.question_number == session.question_number - 1:
             return session  # A retry must not skip forward again.
         if request.question_number != session.question_number or session.status != "feedback":
@@ -127,7 +128,7 @@ async def speech_status():
     return {"status": "ready" if transcription.speech_ready() else "unavailable", "max_seconds": transcription.MAX_SECONDS}
 
 
-@app.post("/api/speech/transcribe")
+@app.post("/api/speech/transcribe", dependencies=[Depends(current_user)])
 async def transcribe_recording(request: Request):
     content_type = request.headers.get('content-type', '').split(';')[0].lower()
     if not content_type.startswith('audio/') and content_type != 'application/octet-stream':
@@ -170,8 +171,8 @@ async def storage_status():
 
 
 @app.get("/api/interviews")
-async def list_interviews(limit: int = Query(default=10, ge=1, le=25), offset: int = Query(default=0, ge=0)):
-    sessions = await run_in_threadpool(store.list, limit + 1, offset)
+async def list_interviews(limit: int = Query(default=10, ge=1, le=25), offset: int = Query(default=0, ge=0), user: UUID = Depends(current_user)):
+    sessions = await run_in_threadpool(store.list, limit + 1, offset, user)
     return {"items": [{"id": session.id, "created_at": session.created_at, "role": session.role,
             "topic": session.topic, "difficulty": session.difficulty, "question_count": session.question_count,
             "question_number": session.question_number, "status": session.status,

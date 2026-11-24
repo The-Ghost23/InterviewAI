@@ -14,6 +14,7 @@ SCHEMA = 'interviewai'
 metadata = MetaData(schema=SCHEMA)
 interviews = Table('interviews', metadata,
     Column('id', PGUUID(as_uuid=True), primary_key=True),
+    Column('owner_id', PGUUID(as_uuid=True), nullable=True, index=True),
     Column('created_at', DateTime(timezone=True), nullable=False),
     Column('updated_at', DateTime(timezone=True), nullable=False),
     Column('role', String(100), nullable=False), Column('topic', String(100), nullable=False),
@@ -66,7 +67,7 @@ def make_database_engine(connection_string: str):
 
 def session_values(session: InterviewSession) -> dict:
     return {key: getattr(session, key) for key in
-            ('id', 'created_at', 'role', 'topic', 'difficulty', 'question_count',
+            ('id', 'owner_id', 'created_at', 'role', 'topic', 'difficulty', 'question_count',
              'question_number', 'question', 'model', 'status', 'revision')}
 
 
@@ -101,18 +102,18 @@ class DatabaseStore:
             connection.execute(select(interviews).limit(0))
             connection.execute(select(turns).limit(0))
 
-    def create(self, request: SessionRequest, question: str, model: str) -> InterviewSession:
-        session = InterviewSession(**request.model_dump(), id=uuid4(), created_at=datetime.now(timezone.utc), question=question, model=model)
+    def create(self, request: SessionRequest, question: str, model: str, owner_id: UUID | None = None) -> InterviewSession:
+        session = InterviewSession(**request.model_dump(), owner_id=owner_id, id=uuid4(), created_at=datetime.now(timezone.utc), question=question, model=model)
         with self.transaction() as connection:
             connection.execute(insert(interviews).values(**session_values(session), updated_at=session.created_at))
         return session
 
-    def get(self, session_id: UUID) -> InterviewSession | None:
+    def get(self, session_id: UUID, owner_id: UUID | None = None) -> InterviewSession | None:
         try:
             with self.transaction() as connection:
                 # A consistent snapshot: the row lock prevents a concurrent save
                 # from changing question/status between reading the row and turns.
-                row = connection.execute(select(interviews).where(interviews.c.id == session_id).with_for_update(read=True)).mappings().first()
+                row = connection.execute(select(interviews).where(interviews.c.id == session_id, interviews.c.owner_id == owner_id).with_for_update(read=True)).mappings().first()
                 if row is None:
                     return None
                 history = connection.execute(select(turns).where(turns.c.interview_id == session_id).order_by(turns.c.question_number)).mappings().all()
@@ -127,7 +128,7 @@ class DatabaseStore:
         values = session_values(updated); values.pop('id'); values.pop('created_at')
         with self.transaction() as connection:
             result = connection.execute(update(interviews).where(interviews.c.id == session.id,
-                interviews.c.revision == session.revision).values(**values, updated_at=datetime.now(timezone.utc)))
+                interviews.c.revision == session.revision, interviews.c.owner_id == session.owner_id).values(**values, updated_at=datetime.now(timezone.utc)))
             if result.rowcount != 1:
                 raise RevisionConflict('This interview changed in another request. Refresh to load the latest saved progress.')
             # Persist only the newly added turn. All prior turns are immutable.
@@ -137,10 +138,10 @@ class DatabaseStore:
                 connection.execute(insert(turns), additions)
         return updated
 
-    def list(self, limit: int, offset: int) -> list[InterviewSession]:
+    def list(self, limit: int, offset: int, owner_id: UUID | None = None) -> list[InterviewSession]:
         try:
             with self.transaction() as connection:
-                rows = connection.execute(select(interviews).order_by(
+                rows = connection.execute(select(interviews).where(interviews.c.owner_id == owner_id).order_by(
                     interviews.c.created_at.desc(), interviews.c.id.desc()).limit(limit).offset(offset).with_for_update(read=True)).mappings().all()
                 if not rows:
                     return []

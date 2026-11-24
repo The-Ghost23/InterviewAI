@@ -47,7 +47,7 @@ def test_migration_compiles_for_private_postgresql_schema():
 
 def test_history_page_is_bounded_and_does_not_expose_answer_text(monkeypatch):
     store=SessionStore();monkeypatch.setattr(main,'store',store)
-    for i in range(3):store.create(SessionRequest(role=f'Engineer {i}'),'Question?','test')
+    for i in range(3):store.create(SessionRequest(role=f'Engineer {i}'),'Question?','test',__import__('uuid').UUID('11111111-1111-4111-8111-111111111111'))
     with TestClient(main.app) as client:
         first=client.get('/api/interviews?limit=2').json()
         second=client.get('/api/interviews?limit=2&offset=2').json()
@@ -84,7 +84,8 @@ def test_real_supabase_roundtrip_restart_and_conflict():
     session=None
     try:
         store.check()
-        session=store.create(SessionRequest(role='Integration test',question_count=1),'Explain a stack.','test-fixture')
+        owner=uuid4(); other=uuid4()
+        session=store.create(SessionRequest(role='Integration test',question_count=1),'Explain a stack.','test-fixture',owner)
         turn=Turn(question_number=1,question=session.question,answer='A stack is last in first out.',feedback=feedback())
         completed=store.save(session.model_copy(update={'history':(turn,),'status':'completed'}))
         assert completed.revision==1
@@ -92,10 +93,15 @@ def test_real_supabase_roundtrip_restart_and_conflict():
         engine.dispose()
         restarted=DatabaseStore(make_database_engine(connection))
         try:
-            restored=restarted.get(session.id)
+            restored=restarted.get(session.id,owner)
+            assert restarted.get(session.id,other) is None
+            assert restarted.get(session.id) is None
+            assert all(item.id != session.id for item in restarted.list(25,0,other))
+            with pytest.raises(RevisionConflict):
+                restarted.save(completed.model_copy(update={"owner_id":other}))
             assert restored==completed
             assert restored.summary['overall_score']==7
-            assert any(item.id==session.id for item in restarted.list(25,0))
+            assert any(item.id==session.id for item in restarted.list(25,0,owner))
             with restarted.engine.begin() as c:
                 policies=c.execute(text("select relrowsecurity from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='interviewai' and c.relname in ('interviews','interview_turns')")).scalars().all()
                 assert policies==[True,True]

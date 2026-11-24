@@ -34,6 +34,7 @@ class Turn(BaseModel):
 
 class InterviewSession(SessionRequest):
     model_config = ConfigDict(frozen=True)
+    owner_id: UUID | None = Field(default=None, exclude=True)
     id: UUID
     created_at: datetime
     question_number: int = 1
@@ -71,24 +72,24 @@ class SessionStore:
         self._sessions: OrderedDict[UUID, InterviewSession] = OrderedDict()
         self._busy: set[UUID] = set()
 
-    def create(self, request: SessionRequest, question: str, model: str) -> InterviewSession:
-        session = InterviewSession(**request.model_dump(), id=uuid4(),
+    def create(self, request: SessionRequest, question: str, model: str, owner_id: UUID | None = None) -> InterviewSession:
+        session = InterviewSession(**request.model_dump(), owner_id=owner_id, id=uuid4(),
                                    created_at=datetime.now(timezone.utc), question=question, model=model)
         self._sessions[session.id] = session
         while len(self._sessions) > self.capacity:
             self._sessions.popitem(last=False)
         return session
 
-    def get(self, session_id: UUID) -> InterviewSession | None:
+    def get(self, session_id: UUID, owner_id: UUID | None = None) -> InterviewSession | None:
         session = self._sessions.get(session_id)
         if session and datetime.now(timezone.utc) - session.created_at >= self.ttl:
             del self._sessions[session_id]
             return None
-        return session
+        return session if session and session.owner_id == owner_id else None
 
     def save(self, session: InterviewSession) -> InterviewSession:
         # Never resurrect a session that expired or was evicted during inference.
-        if self.get(session.id) is None:
+        if self.get(session.id, session.owner_id) is None:
             raise KeyError(session.id)
         saved = session.model_copy(update={'revision': session.revision + 1})
         self._sessions[session.id] = saved
@@ -97,8 +98,8 @@ class SessionStore:
     def check(self):
         return None
 
-    def list(self, limit: int, offset: int) -> list[InterviewSession]:
-        sessions = [session for key in list(self._sessions) if (session := self.get(key)) is not None]
+    def list(self, limit: int, offset: int, owner_id: UUID | None = None) -> list[InterviewSession]:
+        sessions = [session for key in list(self._sessions) if (session := self.get(key, owner_id)) is not None]
         return sorted(sessions, key=lambda session: (session.created_at, session.id), reverse=True)[offset:offset + limit]
 
     @contextmanager

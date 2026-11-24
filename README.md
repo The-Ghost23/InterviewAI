@@ -1,4 +1,4 @@
-# InterviewAI — Days 1–6
+# InterviewAI — Days 1–7
 
 A mock-interview application with local AI feedback and optional browser voice built with React, TypeScript, Vite, Tailwind CSS, FastAPI, and Ollama Qwen3 4B.
 
@@ -217,7 +217,7 @@ From `frontend/`, run `npm test` and `npm run build`. From `backend/`, run `uv r
 
 ## Day 6 — Supabase PostgreSQL and interview history
 
-Backend storage uses a private PostgreSQL schema named `interviewai`. The browser never receives the database connection string. For this local single-owner milestone, the backend connects with the database owner role; user accounts and per-user ownership filtering are not implemented yet. History is shared within this local development workspace, so this is not a public multi-user deployment.
+Backend storage uses a private PostgreSQL schema named `interviewai`. The browser never receives the database connection string. The backend connects with the database owner role. Day 7 adds Supabase Auth and explicit ownership checks to every interview read and write; the private schema is not exposed through the Data API. Deployment hardening is still a separate milestone.
 
 ### Connection and migration
 
@@ -262,3 +262,79 @@ uv run --locked alembic upgrade head --sql
 ```
 
 The migration files and application source belong in Git. Real `.env` files, local notes, screenshots, model weights, and recordings remain ignored.
+
+## Day 7 — Google and email authentication
+
+The sign-in screen offers Google or email/password, account creation with a display username, confirmation-email handling, password reset, and sign-out. Passwords are managed by Supabase Auth; InterviewAI does not store passwords in its interview tables. The display username is profile metadata, not a unique login identifier.
+
+### Local configuration
+
+Copy `frontend/.env.example` to `frontend/.env` if needed, then fill:
+
+```dotenv
+VITE_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLIC_PUBLISHABLE_KEY
+```
+
+In `backend/.env`, keep the existing `DATABASE_URL` and add the same public configuration:
+
+```dotenv
+SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLIC_PUBLISHABLE_KEY
+```
+
+A legacy anon key is also accepted. Never place a service-role key, secret API key, database URL, or Google client secret in the frontend. Both real `.env` files are ignored by Git; only empty example templates are committed.
+
+Install and migrate, then restart the development servers:
+
+```bash
+cd backend
+uv sync --locked
+uv run --locked alembic upgrade head
+uv run --locked uvicorn app.main:app --reload
+```
+
+In another terminal:
+
+```bash
+cd frontend
+npm ci
+npm run dev
+```
+
+Ollama must also be running for question generation. Authentication itself uses Supabase and does not require Ollama.
+
+### Provider configuration
+
+1. In Supabase Authentication, enable the Email provider. Retain email confirmation for signup. Configure SMTP when moving beyond development delivery limits.
+2. Under URL Configuration, use `http://127.0.0.1:5173/` for the local Site URL and allow both `http://127.0.0.1:5173/` and `http://localhost:5173/` as redirect URLs. Start signup and finish confirmation in the same browser/origin for the PKCE verifier.
+3. In Google Cloud, configure Google Auth Platform branding, audience and OAuth consent. If the app is in testing, add your Google account as a test user.
+4. Create an OAuth client of type **Web application**. Add the Supabase Google provider callback URL (`https://YOUR_PROJECT_REF.supabase.co/auth/v1/callback`) as an Authorized redirect URI. Copy the exact callback displayed in Supabase.
+5. In Supabase Authentication → Sign In / Providers → Google, enable Google and save the client ID and client secret. Keep the client secret in the provider dashboard, never in frontend source or chat.
+6. Open the app, test email signup/confirmation/login and sign-out, then Google sign-in. These real account flows require the account holder to complete the authentication prompts.
+
+Google setup reference: https://supabase.com/docs/guides/auth/social-sign-in/auth-google
+
+### Ownership and API behavior
+
+The frontend uses the official Supabase SDK with PKCE, persisted sessions and automatic token refresh. It sends the access token in an Authorization bearer header. The backend verifies each protected request with the configured project's Supabase Auth user endpoint, obtains the verified user ID, and scopes storage operations to that ID. It does not trust client-provided owner IDs or decode unsigned claims. Anonymous or expired sessions receive 401; unavailable or missing authentication configuration fails closed.
+
+Interview creation, history, session retrieval, answer submission, next-question generation, standalone question generation, and speech transcription require authentication. Health/readiness endpoints remain public. Another user's interview returns the same 404 as a missing interview. New sessions receive ownership on the server. Database updates check both owner and revision. RLS policies additionally describe per-user access for the authenticated role; the owner-role backend still enforces explicit filters because owner connections bypass RLS. No new public schema grants were added.
+
+The additive ownership migration preserves existing interviews with NULL owner IDs. Those legacy interviews are hidden from all signed-in accounts; they are not assigned to the first person who signs in. They can be deliberately migrated to a verified account later.
+
+### Verification
+
+```bash
+cd backend
+uv run --locked pytest -q
+RUN_SUPABASE_TESTS=1 uv run --locked pytest -q tests/test_storage.py
+```
+
+```bash
+cd frontend
+npm test
+npm run build
+```
+
+Backend tests cover missing/invalid tokens, unavailable auth, server-assigned owners, cross-user reads/writes, private legacy rows and live PostgreSQL isolation. Frontend tests cover private-content gating, Google redirect parameters, rejected password login, signup confirmation and recovery/sign-out state transitions. Mocked UI tests do not replace a real Google consent or confirmation-email round trip.
